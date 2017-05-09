@@ -23,6 +23,28 @@
  */
 
 if(\OC::$server->getConfig()->getSystemValue('updatechecker', true) === true) {
+	$config = \OC::$server->getConfig();
+	if ($config->getAppValue('updatenotification', 'updaterversion', '') !== 'b760ea58c0ea0dec3a67efcf0e31f6ba') {
+		$updaterFile = '../../../updater/index.php';
+		if (file_exists($updaterFile) && is_writable($updaterFile) && md5_file($updaterFile) !== 'b760ea58c0ea0dec3a67efcf0e31f6ba') {
+			copy('../resources/updater/index.php', $updaterFile);
+		} else if (!file_exists($updaterFile) && @mkdir(dirname($updaterFile)) && is_dir(dirname($updaterFile))) {
+			copy('../resources/updater/index.php', $updaterFile);
+		}
+
+		if (!file_exists($updaterFile) || md5_file($updaterFile) !== 'b760ea58c0ea0dec3a67efcf0e31f6ba') {
+			throw new \OC\HintException(
+				'Could not replace updater',
+				'Please manually replace updater/index.php with the file from apps/updatenotification/resources/updater/index.php'
+			);
+		}
+
+		// Update updater URL to the newest location
+		$config->setSystemValue('updater.server.url', 'https://updates.nextcloud.com/updater_server/');
+		$config->setAppValue('updatenotification', 'updaterversion', 'b760ea58c0ea0dec3a67efcf0e31f6ba');
+		$config->setAppValue('core', 'lastupdatedat', 0);
+	}
+
 	$updater = new \OC\Updater\VersionCheck(
 		\OC::$server->getHTTPClientService(),
 		\OC::$server->getConfig()
