@@ -212,9 +212,9 @@ class Provisioning {
 			if (strpos($lock, 'locking_') === 0) {
 				$path = substr($lock, strlen('locking_'));
 
-				if ($type === ILockingProvider::LOCK_EXCLUSIVE && $this->config->getAppValue('testing', $lock) == ILockingProvider::LOCK_EXCLUSIVE) {
+				if ($type === ILockingProvider::LOCK_EXCLUSIVE && (int) $this->config->getAppValue('testing', $lock) === ILockingProvider::LOCK_EXCLUSIVE) {
 					$lockingProvider->releaseLock($path, $this->config->getAppValue('testing', $lock));
-				} else if ($type === ILockingProvider::LOCK_SHARED && $this->config->getAppValue('testing', $lock) == ILockingProvider::LOCK_SHARED) {
+				} else if ($type === ILockingProvider::LOCK_SHARED && (int) $this->config->getAppValue('testing', $lock) === ILockingProvider::LOCK_SHARED) {
 					$lockingProvider->releaseLock($path, $this->config->getAppValue('testing', $lock));
 				} else {
 					$lockingProvider->releaseLock($path, $this->config->getAppValue('testing', $lock));

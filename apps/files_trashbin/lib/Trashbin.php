@@ -93,7 +93,7 @@ class Trashbin {
 			return [null, null];
 		}
 		Filesystem::initMountPoints($uid);
-		if ($uid != User::getUser()) {
+		if ($uid !== User::getUser()) {
 			$info = Filesystem::getFileInfo($filename);
 			$ownerView = new View('/' . $uid . '/files');
 			try {
