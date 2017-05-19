@@ -249,6 +249,7 @@ class CertificateManager implements ICertificateManager {
 	 * @return bool
 	 */
 	private function needsRebundling($uid = '') {
+		return true;
 		if ($uid === '') {
 			$uid = $this->uid;
 		}
