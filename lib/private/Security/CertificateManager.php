@@ -120,7 +120,7 @@ class CertificateManager implements ICertificateManager {
 		}
 
 		$certPath = $path . 'rootcerts.crt';
-		$fhCerts = $this->view->fopen($certPath, 'w');
+		$fhCerts = $this->view->fopen($certPath.'.tmp', 'w');
 
 		// Write user certificates
 		foreach ($certs as $cert) {
@@ -143,6 +143,8 @@ class CertificateManager implements ICertificateManager {
 		}
 
 		fclose($fhCerts);
+
+		$this->view->rename($certPath.'.tmp', $certPath);
 	}
 
 	/**
