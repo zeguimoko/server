@@ -19,6 +19,8 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\IJobList;
+use OCP\Encryption\IEncryptionModule;
+use OCP\Encryption\IManager;
 use OCP\IAvatar;
 use OCP\IAvatarManager;
 use OCP\IConfig;
@@ -79,6 +81,10 @@ class UsersControllerTest extends \Test\TestCase {
 	private $jobList;
 	/** @var \OC\Security\IdentityProof\Manager |\PHPUnit_Framework_MockObject_MockObject  */
 	private $securityManager;
+	/** @var  IManager | \PHPUnit_Framework_MockObject_MockObject */
+	private $encryptionManager;
+	/** @var  IEncryptionModule  | \PHPUnit_Framework_MockObject_MockObject */
+	private $encryptionModule;
 
 	protected function setUp() {
 		parent::setUp();
@@ -101,11 +107,16 @@ class UsersControllerTest extends \Test\TestCase {
 		$this->crypto = $this->createMock(ICrypto::class);
 		$this->securityManager = $this->getMockBuilder(\OC\Security\IdentityProof\Manager::class)->disableOriginalConstructor()->getMock();
 		$this->jobList = $this->createMock(IJobList::class);
+		$this->encryptionManager = $this->createMock(IManager::class);
 		$this->l = $this->createMock(IL10N::class);
 		$this->l->method('t')
 			->will($this->returnCallback(function ($text, $parameters = []) {
 				return vsprintf($text, $parameters);
 			}));
+
+		$this->encryptionModule = $this->createMock(IEncryptionModule::class);
+		$this->encryptionManager->expects($this->any())->method('getEncryptionModules')
+			->willReturn(['encryptionModule' => ['callback' => function() { return $this->encryptionModule;}]]);
 
 		/*
 		 * Set default avatar behaviour for whole test suite
@@ -149,8 +160,8 @@ class UsersControllerTest extends \Test\TestCase {
 				$this->timeFactory,
 				$this->crypto,
 				$this->securityManager,
-				$this->jobList
-
+				$this->jobList,
+				$this->encryptionManager
 			);
 		} else {
 			return $this->getMockBuilder(UsersController::class)
@@ -175,7 +186,8 @@ class UsersControllerTest extends \Test\TestCase {
 						$this->timeFactory,
 						$this->crypto,
 						$this->securityManager,
-						$this->jobList
+						$this->jobList,
+						$this->encryptionManager
 					]
 				)->setMethods($mockedMethods)->getMock();
 		}
@@ -1634,8 +1646,16 @@ class UsersControllerTest extends \Test\TestCase {
 		$this->assertEquals($expectedResult, $result);
 	}
 
-	public function testRestoreNotPossibleWithoutAdminRestore() {
+	/**
+	 * @dataProvider dataTestRestoreNotPossibleWithoutAdminRestore
+	 *
+	 * @param bool $masterKeyEnabled
+	 */
+	public function testRestoreNotPossibleWithoutAdminRestore($masterKeyEnabled) {
 		list($user, $expectedResult) = $this->mockUser();
+
+		// without the master key enabled we use per-user keys
+		$this->encryptionModule->expects($this->once())->method('needDetailedAccessList')->willReturn(!$masterKeyEnabled);
 
 		$this->appManager
 			->method('isEnabledForUser')
@@ -1644,7 +1664,8 @@ class UsersControllerTest extends \Test\TestCase {
 			)
 			->will($this->returnValue(true));
 
-		$expectedResult['isRestoreDisabled'] = true;
+		// without the master key enabled we use per-user keys -> restore is disabled
+		$expectedResult['isRestoreDisabled'] = !$masterKeyEnabled;
 
 		$subadmin = $this->getMockBuilder('\OC\SubAdmin')
 			->disableOriginalConstructor()
@@ -1661,6 +1682,13 @@ class UsersControllerTest extends \Test\TestCase {
 		$controller = $this->getController(true);
 		$result = self::invokePrivate($controller, 'formatUserForIndex', [$user]);
 		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function dataTestRestoreNotPossibleWithoutAdminRestore() {
+		return [
+			[true],
+			[false]
+		];
 	}
 
 	public function testRestoreNotPossibleWithoutUserRestore() {
