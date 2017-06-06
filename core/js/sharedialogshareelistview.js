@@ -25,7 +25,7 @@
 			'<ul id="shareWithList" class="shareWithList">' +
 			'{{#each sharees}}' +
 				'<li data-share-id="{{shareId}}" data-share-type="{{shareType}}" data-share-with="{{shareWith}}">' +
-					'<div class="avatar {{#if modSeed}}imageplaceholderseed{{/if}}" data-username="{{shareWith}}" data-displayname="{{shareWithDisplayName}}" {{#if modSeed}}data-seed="{{shareWith}} {{shareType}}"{{/if}}></div>' +
+					'<div class="avatar {{#if modSeed}}imageplaceholderseed{{/if}}" data-username="{{shareWith}}" data-avatar="{{shareWithAvatar}}" data-displayname="{{shareWithDisplayName}}" {{#if modSeed}}data-seed="{{shareWith}} {{shareType}}"{{/if}}></div>' +
 					'<span class="username" title="{{shareWithTitle}}">{{shareWithDisplayName}}</span>' +
 					'<span class="sharingOptionsGroup">' +
 						'{{#if editPermissionPossible}}' +
@@ -188,6 +188,7 @@
 		getShareeObject: function(shareIndex) {
 			var shareWith = this.model.getShareWith(shareIndex);
 			var shareWithDisplayName = this.model.getShareWithDisplayName(shareIndex);
+			var shareWithAvatar = this.model.getShareWithAvatar(shareIndex);
 			var shareWithTitle = '';
 			var shareType = this.model.getShareType(shareIndex);
 			var sharedBy = this.model.getSharedBy(shareIndex);
@@ -238,6 +239,7 @@
 				hasDeletePermission: this.model.hasDeletePermission(shareIndex),
 				shareWith: shareWith,
 				shareWithDisplayName: shareWithDisplayName,
+				shareWithAvatar: shareWithAvatar,
 				shareWithTitle: shareWithTitle,
 				shareType: shareType,
 				shareId: this.model.get('shares')[shareIndex].id,
@@ -349,11 +351,18 @@
 
 				this.$('.avatar').each(function () {
 					var $this = $(this);
+
 					if ($this.hasClass('imageplaceholderseed')) {
 						$this.css({width: 32, height: 32});
-						$this.imageplaceholder($this.data('seed'));
+						if ($this.data('avatar') !== null)
+						{
+							$this.css('border-radius', '0%');
+							$this.css('background', 'url(' + $this.data('avatar') + ') no-repeat');
+							$this.css('background-size', '32px');
+						} else {
+							$this.imageplaceholder($this.data('seed'));
+						}
 					} else {
-						//                         user,   size,  ie8fix, hidedefault,  callback, displayname
 						$this.avatar($this.data('username'), 32, undefined, undefined, undefined, $this.data('displayname'));
 					}
 				});
