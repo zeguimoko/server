@@ -212,6 +212,7 @@
 				shareWithTitle = shareWith + " (" + t('core', 'email') + ')';
 			} else if (shareType === OC.Share.SHARE_TYPE_CIRCLE) {
 				shareWithTitle = shareWith;
+				shareWith = 'circle-' + shareIndex;
 			}
 
 			if (sharedBy !== oc_current_user) {
@@ -358,7 +359,7 @@
 						{
 							$this.css('border-radius', '0%');
 							$this.css('background', 'url(' + $this.data('avatar') + ') no-repeat');
-							$this.css('background-size', '32px');
+							$this.css('background-size', '31px');
 						} else {
 							$this.imageplaceholder($this.data('seed'));
 						}
