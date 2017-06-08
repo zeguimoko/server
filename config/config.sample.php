@@ -1551,6 +1551,10 @@ $CONFIG = array(
 /**
  * show group membership on the personal page
  */
-'settings.personal.showGroupMembership' => true
+'settings.personal.showGroupMembership' => true,
 
+/**
+ * send out invitations via Nextcloud's integrated CalDAV server
+ */
+'caldav_send_invitations' => true,
 );
