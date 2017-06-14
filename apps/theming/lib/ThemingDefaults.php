@@ -44,6 +44,10 @@ class ThemingDefaults extends \OC_Defaults {
 	/** @var string */
 	private $name;
 	/** @var string */
+	private $title;
+	/** @var string */
+	private $entity;
+	/** @var string */
 	private $url;
 	/** @var string */
 	private $slogan;
@@ -79,6 +83,8 @@ class ThemingDefaults extends \OC_Defaults {
 		$this->util = $util;
 
 		$this->name = parent::getName();
+		$this->title = parent::getTitle();
+		$this->entity = parent::getEntity();
 		$this->url = parent::getBaseUrl();
 		$this->slogan = parent::getSlogan();
 		$this->color = parent::getColorPrimary();
@@ -93,11 +99,11 @@ class ThemingDefaults extends \OC_Defaults {
 	}
 
 	public function getTitle() {
-		return $this->getName();
+		return strip_tags($this->config->getAppValue('theming', 'name', $this->title));
 	}
 
 	public function getEntity() {
-		return $this->getName();
+		return strip_tags($this->config->getAppValue('theming', 'name', $this->entity));
 	}
 
 	public function getBaseUrl() {
